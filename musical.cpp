@@ -1,112 +1,200 @@
-#include <iostream> // cout ou cin ou endl
-#include <conio.h> // captura as teclas getch()
-#include <windows.h> // função beep()
-#include <string> 
+#include <iostream> // cout, cin, endl
+#include <conio.h> // captura teclas com getch()
+#include <windows.h> // função Beep()
+#include <vector>
+#include <fstream>
 
 using namespace std;
 
-void tocarNota(float frequencia, int duracao) {
+struct Nota {
+    float frequencia;
+    int duracao;
+};
+
+void tocarNota(int frequencia, int duracao) {
     if (frequencia > 0) {
         Beep(frequencia, duracao);
     }
 }
 
-void Violao(){
-    cout << "Comeca a tocar." << endl;
-    cout << "tecle 'q' para encerrar e voltar ao menu principal." << endl;
-
-    while (true){
-        char tecla = getch();
-        switch (tecla){
-        case 'a':
-            tocarNota(82, 440); //mi
-            break;
-        case 's':
-            tocarNota(110, 440); //la
-            break;
-        case 'd':
-            tocarNota(146, 440); //re
-            break;
-        case 'f':
-            tocarNota(196, 440); //sol
-            break;
-        case 'g':
-            tocarNota(246, 440); //si
-            break;
-        case 'h':
-            tocarNota(329, 440); //mi
-            break;
-        case 'q':
-            cout << "Encerrando o Violao virtual." << endl;
-            return;
-        default:
-            break;
+void salvarMusica(const vector<Nota>& musica, const string& nomeArquivo) {
+    ofstream arquivo(nomeArquivo);
+    if (arquivo.is_open()) {
+        for (const auto& nota : musica) {
+            arquivo << nota.frequencia << " " << nota.duracao << endl;
         }
+        arquivo.close();
+        cout << "Música salva em \"" << nomeArquivo << "\"!" << endl;
+    } else {
+        cout << "Erro ao salvar a música." << endl;
     }
-
+    system("pause");
 }
 
-void Guitarra(){
-    cout << "Comeca a tocar." << endl;
-    cout << "tecle 'q' para encerrrar e voltar ao menu princinpal." << endl;
-
-    while (true){
-        char tecla = getch();
-
-        switch (tecla){
-        case 'a':
-            tocarNota(82, 407); // do
-            break;
-        case 's':
-            tocarNota(110, 307); // re
-            break;
-        case 'd':
-            tocarNota(146, 832); // mi
-            break;
-        case 'f':
-            tocarNota(195, 998); // fa
-            break;
-        case 'g':
-            tocarNota(246, 942); // sol
-            break;
-        case 'h':
-            tocarNota(329, 628); // la
-            break;
-        case 'q':
-            cout << "ENCERRANDO A GUITARRA VIRTUAL..." << endl;
-            return;
-        default:
-            break;
-        }
+void tocarMusica(const vector<Nota>& musica) {
+    for (const auto& nota : musica) {
+        tocarNota(nota.frequencia, nota.duracao);
     }
 }
 
-int main(){
+void carregarMusica(vector<Nota>& musica, const string& nomeArquivo) {
+    ifstream arquivo(nomeArquivo);
+    if (arquivo.is_open()) {
+        Nota nota;
+        while (arquivo >> nota.frequencia >> nota.duracao) {
+            musica.push_back(nota);
+        }
+        arquivo.close();
+    }
+}
+
+void violao() {
+    vector<Nota> musica;
+    cout << "Comece a tocar. Tecle 'q' para encerrar e salvar a música." << endl;
+
+    while (true) {
+        char tecla = getch();
+        Nota nota = {0, 440}; 
+
+        switch (tecla) {
+        case 'a':
+            nota.frequencia = 82; // Mi grave
+            break;
+        case 's':
+            nota.frequencia = 110; // Lá
+            break;
+        case 'd':
+            nota.frequencia = 146; // Ré
+            break;
+        case 'f':
+            nota.frequencia = 196; // Sol
+            break;
+        case 'g':
+            nota.frequencia = 246; // Si
+            break;
+        case 'h':
+            nota.frequencia = 329; // Mi agudo
+            break;
+        case 'q':
+            cout << "Encerrando o violão virtual." << endl;
+            salvarMusica(musica, "Violao.txt");
+            return;
+        default:
+            continue;
+        }
+
+        tocarNota(nota.frequencia, nota.duracao);
+        musica.push_back(nota);
+    }
+}
+
+void guitarra() {
+    vector<Nota> musica;
+    cout << "Comece a tocar. Tecle 'q' para encerrar e salvar a música." << endl;
+
+    while (true) {
+        char tecla = getch();
+        Nota nota = {0, 440};
+
+        switch (tecla) {
+        case 'a':
+            nota.frequencia = 82; // Dó
+            break;
+        case 's':
+            nota.frequencia = 110; // Ré
+            break;
+        case 'd':
+            nota.frequencia = 146; // Mi
+            break;
+        case 'f':
+            nota.frequencia = 195; // Fá
+            break;
+        case 'g':
+            nota.frequencia = 246; // Sol
+            break;
+        case 'h':
+            nota.frequencia = 329; // Lá
+            break;
+        case 'q':
+            cout << "Encerrando a guitarra virtual." << endl;
+            salvarMusica(musica, "Guitarra.txt");
+            return;
+        default:
+            continue;
+        }
+
+        tocarNota(nota.frequencia, nota.duracao);
+        musica.push_back(nota);
+    }
+}
+
+void reproduzirMusica() {
+    vector<Nota> musica;
+    int opcao;
+
+    cout << "Escolha a música salva para tocar:" << endl;
+    cout << "1. Violão" << endl;
+    cout << "2. Guitarra" << endl;
+    cout << "Opção: ";
+    cin >> opcao;
+
+    switch (opcao) {
+    case 1:
+        carregarMusica(musica, "Violao.txt");
+        if (!musica.empty()) {
+            cout << "Tocando musica do violao..." << endl;
+            tocarMusica(musica);
+        } else {
+            cout << "Nenhuma música salva encontrada para o violão." << endl;
+        }
+        break;
+    case 2:
+        carregarMusica(musica, "Guitarra.txt");
+        if (!musica.empty()) {
+            cout << "Tocando musica da guitarra..." << endl;
+            tocarMusica(musica);
+        } else {
+            cout << "Nenhuma musica salva encontrada para a guitarra." << endl;
+        }
+        break;
+    default:
+        cout << "Opcaoo invalida." << endl;
+        break;
+    }
+
+    system("pause");
+}
+
+int main() {
     int option;
-    while (true){
+    while (true) {
         system("cls");
-        cout << "Bem vindo ao criador de trilhas sonoras" << endl;
-        cout << "VAMOS ESCOLHER!!!" << endl;
-        cout << "1. Violao" << endl;
+        cout << "Bem-vindo ao criador de trilhas sonoras" << endl;
+        cout << "Escolha uma opcao:" << endl;
+        cout << "1. Violão" << endl;
         cout << "2. Guitarra" << endl;
-        cout << "3. Sair" << endl;
-        cout << "Informe o instrumento desejado: ";
+        cout << "3. Reproduzir música salva" << endl;
+        cout << "4. Sair" << endl;
+        cout << "Opcao: ";
         cin >> option;
 
         system("cls");
 
         switch (option) {
         case 1:
-            Violao();
+            violao();
             break;
         case 2:
-            Guitarra();
+            guitarra();
             break;
         case 3:
-            cout << "Ate mais!!" << endl;
+            reproduzirMusica();
+            break;
+        case 4:
+            cout << "Saindo... Ate mais!" << endl;
             return 0;
         default:
-            cout << "Opção inválida. Tente novamente!" << endl;
+            cout << "Opcao invalida. Tente novamente!" << endl;
             system("pause");
             break;
         }
